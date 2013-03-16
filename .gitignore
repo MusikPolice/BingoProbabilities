@@ -4,4 +4,7 @@
 *.jar
 *.war
 *.ear
-/BingoProbabilities/nbproject/private/
+/BingoProbabilities/nbproject/
+/BingoProbabilities/build/
+*.xml
+*.mf
