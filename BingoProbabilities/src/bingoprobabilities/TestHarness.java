@@ -14,21 +14,26 @@ import java.util.List;
 public final class TestHarness {
 
     public TestHarness() {
-        int NUM_CARDS = 50;
-        int BINGOS_AVAILABLE = 40;
+        int MIN_BINGOS_AVAILABLE = 1;
+        int MAX_BINGOS_AVAILABLE = 400;
+        int MIN_CARDS_IN_PLAY = 1;
+        int MAX_CARDS_IN_PLAY = 800;
         int NUM_GAMES = 100;
 
-        //run a bunch of fake games
         long startTime = System.currentTimeMillis();
-        BingoGameResultSet resultSet = new BingoGameResultSet(NUM_CARDS, BINGOS_AVAILABLE);
-        for (int i = 0; i < NUM_GAMES; i++) {
-            resultSet.addResult(playBingoGame(NUM_CARDS, BINGOS_AVAILABLE));
+        List<BingoGameResultSet> overallResults = new ArrayList<BingoGameResultSet>();
+        for (int bingosAvailable = MIN_BINGOS_AVAILABLE; bingosAvailable <= MAX_BINGOS_AVAILABLE; bingosAvailable++) {
+            for (int cardsInPlay = MIN_CARDS_IN_PLAY; cardsInPlay <= MAX_CARDS_IN_PLAY; cardsInPlay++) {
+                BingoGameResultSet result = new BingoGameResultSet(cardsInPlay, bingosAvailable);
+                for (int game = 0; game < NUM_GAMES; game++) {
+                    result.addResult(playBingoGame(cardsInPlay, bingosAvailable));
+                }
+                overallResults.add(result);
+                System.out.println(bingosAvailable + " Bingos Available + " + cardsInPlay + " Cards in Play = " + result.getMeanNumBallsCalled() + " Balls Called.");
+            }
         }
-        System.out.println("Played " + String.valueOf(NUM_GAMES) + " games in " + String.valueOf(System.currentTimeMillis() - startTime) + "ms.");
-
-        //process results
-        System.out.println("On average, " + String.valueOf(Math.round(resultSet.getMeanNumBallsCalled())) + " balls were called.");
-        System.out.println("Standard deviation is " + String.valueOf(resultSet.getStandardDeviationNumBallsCalled()));
+        
+        System.out.println("Gathered " + overallResults.size() + " sample sets over " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
     private BingoGameResult playBingoGame(int numCards, int numBingos) {
