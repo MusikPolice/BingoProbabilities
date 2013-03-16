@@ -13,15 +13,23 @@ import java.util.List;
  */
 public class TestHarness {
     
+    public static final int NUM_CARDS = 50;
+    public static final int BINGOS_AVAILABLE = 40;
+    
     public TestHarness() {
+        if (NUM_CARDS < BINGOS_AVAILABLE) {
+            throw new IllegalArgumentException("Not enough cards to get all of the bingos");
+        }
+        
         NumberPool balls = new NumberPool(1, 75);
         WinConditionEvaluator evaluator = new HorizontalLineEvaluator();
         
         List<Card> cards = new ArrayList<Card>();
         List<Card> finishedCards = new ArrayList<Card>();
+        int bingos = 0;
         
-        //create 50 random cards
-        for (int i = 0; i < 50; i++) {
+        //create some random cards
+        for (int i = 0; i < NUM_CARDS; i++) {
             Card c = new Card();
             cards.add(c);
         }
@@ -36,6 +44,7 @@ public class TestHarness {
                 
                 if (evaluator.hasBingo(c)) {
                     finishedCards.add(c);
+                    bingos++;
                 }
             }
             
@@ -47,10 +56,15 @@ public class TestHarness {
             if (cards.isEmpty()) {
                 break;
             }
+            
+            //if all of the bingos have been earned, the game is over
+            if (bingos >= BINGOS_AVAILABLE) {
+                break;
+            }
         }
         
         //how many balls are left?
-        System.out.println("Game ended after " + String.valueOf(balls.getNumberOfPulls()) + " balls were pulled");
+        System.out.println("Game ended after " + String.valueOf(balls.getNumberOfPulls()) + " balls with " + String.valueOf(Math.min(bingos, BINGOS_AVAILABLE)) + " bingos");
     }
 
     /**
