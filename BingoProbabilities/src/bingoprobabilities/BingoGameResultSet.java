@@ -1,6 +1,4 @@
 package bingoprobabilities;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,11 +8,14 @@ import java.util.List;
 public class BingoGameResultSet {
     private final int numCardsActive;
     private final int numBingosAvailable;
-    private final List<BingoGameResult> results = new ArrayList<BingoGameResult>();
+    private double mean = 0;
+    private double standardDeviation = 0;
 
-    public BingoGameResultSet(int numCardsActive, int numBingosAvailable) {
+    public BingoGameResultSet(int numCardsActive, int numBingosAvailable, List<Integer> numBallsCalledInEachGame) {
         this.numCardsActive = numCardsActive;
         this.numBingosAvailable = numBingosAvailable;
+        this.mean = calculateMean(numBallsCalledInEachGame);
+        this.standardDeviation = calculateStandardDeviation(numBallsCalledInEachGame);
     }
 
     public int getNumCardsActive() {
@@ -24,48 +25,36 @@ public class BingoGameResultSet {
     public int getNumBingosAvailable() {
         return numBingosAvailable;
     }
-    
-    public void addResult(BingoGameResult result) {
-        this.results.add(result);
+
+    public double getMeanNumberOfBallsCalled() {
+        return mean;
     }
-    
-    public double getMeanNumBallsCalled() {
-        List<Integer> ballsCalled = new ArrayList<Integer>();
-        for (BingoGameResult result : results) {
-            ballsCalled.add(result.getNumBallsCalled());
-        }
-        return calculateMean(ballsCalled);
-    }
-    
-    public double getStandardDeviationNumBallsCalled() {
-        List<Integer> ballsCalled = new ArrayList<Integer>();
-        for (BingoGameResult result : results) {
-            ballsCalled.add(result.getNumBallsCalled());
-        }
-        return calculateStandardDeviation(ballsCalled);
+
+    public double getStandardDeviationOfNumberOfBallsCalled() {
+        return standardDeviation;
     }
     
     private double calculateMean(List<Integer> data) {
         // mean is just an average
-        double mean = 0;
+        double m = 0;
         final int n = data.size();
         if (n < 2) {
             return Double.NaN;
         }
         for (int i = 0; i < n; i++) {
-            mean += data.get(i);
+            m += data.get(i);
         }
-        return mean / (double)n;
+        return m / (double)n;
     }
 
     private double calculateStandardDeviation(List<Integer> data) {
         // standard deviation is sqrt of sum of (values-mean) squared divided by n
-        double mean = calculateMean(data);
+        double m = calculateMean(data);
 
         // calculate the sum of squares
         double sum = 0;
         for (int i = 0; i < data.size(); i++) {
-            final double v = data.get(i) - mean;
+            final double v = data.get(i) - m;
             sum += v * v;
         }
     

@@ -53,15 +53,18 @@ public final class TestHarness {
 
         @Override
         public BingoGameResultSet call() throws Exception {
-            BingoGameResultSet resultSet = new BingoGameResultSet(numCards, numBingos);
+            List<Integer> numBallsCalledInEachGame = new ArrayList<Integer>();
             for (int game = 0; game < numGames; game++) {
-                resultSet.addResult(playBingo());
+                numBallsCalledInEachGame.add(playBingo());
             }
-            
-            return resultSet;
+            return new BingoGameResultSet(numCards, numBingos, numBallsCalledInEachGame);
         }
         
-        private BingoGameResult playBingo() {
+        /**
+         * Plays a game of bingo
+         * @return the number of balls that were called prior to the end of the game
+         */
+        private int playBingo() {
             NumberPool balls = new NumberPool(1, 75);
             WinConditionEvaluator evaluator = new HorizontalLineEvaluator();
 
@@ -105,7 +108,7 @@ public final class TestHarness {
             }
 
             //return the game results to caller
-            return new BingoGameResult(Math.min(bingos, numBingos), balls.getNumberOfPulls());
+            return balls.getNumberOfPulls();
         }
     }
 
