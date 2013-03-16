@@ -4,9 +4,13 @@ import bingo.Card;
 import bingo.NumberPool;
 import bingo.winconditions.HorizontalLineEvaluator;
 import bingo.winconditions.WinConditionEvaluator;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -18,25 +22,65 @@ import java.util.concurrent.TimeUnit;
  */
 public final class TestHarness {
 
-    public TestHarness() throws InterruptedException {
+    public TestHarness() throws InterruptedException, ExecutionException {
         int MIN_BINGOS_AVAILABLE = 1;
-        int MAX_BINGOS_AVAILABLE = 400;
+        int MAX_BINGOS_AVAILABLE = 100;
         int MIN_CARDS_IN_PLAY = 1;
-        int MAX_CARDS_IN_PLAY = 800;
+        int MAX_CARDS_IN_PLAY = 100;
         int NUM_GAMES = 100;
+        long runTime = 0;
 
-        long startTime = System.currentTimeMillis();
-        
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-        List<Future<BingoGameResultSet>> results = new ArrayList<Future<BingoGameResultSet>>();
+        //print a header
+        StringBuffer b = new StringBuffer();
+        b.append("cards/bingos");
         for (int bingosAvailable = MIN_BINGOS_AVAILABLE; bingosAvailable <= MAX_BINGOS_AVAILABLE; bingosAvailable++) {
-            for (int cardsInPlay = MIN_CARDS_IN_PLAY; cardsInPlay <= MAX_CARDS_IN_PLAY; cardsInPlay++) {
+            b.append(",");
+            b.append(bingosAvailable);
+        }
+        writeToFile(b.toString());
+
+        //each line of the output file will be for a different number of cards
+        ExecutorService threadPool;
+        List<Future<BingoGameResultSet>> results;
+        long startTime;
+        for (int cardsInPlay = MIN_CARDS_IN_PLAY; cardsInPlay <= MAX_CARDS_IN_PLAY; cardsInPlay++) {
+
+            startTime = System.currentTimeMillis();
+            
+            //run all of the bingo games for this number of cards with the help of a thread pool
+            threadPool = Executors.newCachedThreadPool();
+            results = new ArrayList<Future<BingoGameResultSet>>();
+            for (int bingosAvailable = MIN_BINGOS_AVAILABLE; bingosAvailable <= MAX_BINGOS_AVAILABLE; bingosAvailable++) {
                 results.add(threadPool.submit(new BingoGameSimulator(NUM_GAMES, cardsInPlay, bingosAvailable)));
             }
+            threadPool.shutdown();
+            threadPool.awaitTermination(1, TimeUnit.HOURS);
+            
+            //dump results to file to ease memory footprint
+            b = new StringBuffer();
+            b.append(cardsInPlay);
+            for (Future<BingoGameResultSet> result : results) {
+                b.append(",");
+                b.append(result.get().getMeanNumberOfBallsCalled());
+            }
+            writeToFile(b.toString());
+            
+            runTime += (System.currentTimeMillis() - startTime);
+            System.out.println("Calculated results for " + cardsInPlay + " cards in play in " + (System.currentTimeMillis() - startTime) + "ms");
         }
         
-        threadPool.awaitTermination(1, TimeUnit.HOURS);
-        System.out.println("Gathered " + results.size() + " sample sets over " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println("Total run time is " + runTime + "ms");
+    }
+
+    private void writeToFile(String text) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(new File("/home/jfritz/Desktop/results.txt"), true));
+            bw.write(text);
+            bw.newLine();
+            bw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private class BingoGameSimulator implements Callable<BingoGameResultSet> {
@@ -59,10 +103,12 @@ public final class TestHarness {
             }
             return new BingoGameResultSet(numCards, numBingos, numBallsCalledInEachGame);
         }
-        
+
         /**
          * Plays a game of bingo
-         * @return the number of balls that were called prior to the end of the game
+         *
+         * @return the number of balls that were called prior to the end of the
+         * game
          */
         private int playBingo() {
             NumberPool balls = new NumberPool(1, 75);
@@ -115,7 +161,7 @@ public final class TestHarness {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         TestHarness t = new TestHarness();
     }
 }
