@@ -41,7 +41,7 @@ public final class TestHarness {
 
         //each line of the output file will be for a different number of cards
         ExecutorService threadPool;
-        List<Future<BingoGameResultSet>> results;
+        List<Future<Double>> results;
         long startTime;
         for (int cardsInPlay = MIN_CARDS_IN_PLAY; cardsInPlay <= MAX_CARDS_IN_PLAY; cardsInPlay++) {
 
@@ -49,7 +49,7 @@ public final class TestHarness {
             
             //run all of the bingo games for this number of cards with the help of a thread pool
             threadPool = Executors.newCachedThreadPool();
-            results = new ArrayList<Future<BingoGameResultSet>>();
+            results = new ArrayList<Future<Double>>();
             for (int bingosAvailable = MIN_BINGOS_AVAILABLE; bingosAvailable <= MAX_BINGOS_AVAILABLE; bingosAvailable++) {
                 results.add(threadPool.submit(new BingoGameSimulator(NUM_GAMES, cardsInPlay, bingosAvailable)));
             }
@@ -59,9 +59,9 @@ public final class TestHarness {
             //dump results to file to ease memory footprint
             b = new StringBuffer();
             b.append(cardsInPlay);
-            for (Future<BingoGameResultSet> result : results) {
+            for (Future<Double> result : results) {
                 b.append(",");
-                b.append(result.get().getMeanNumberOfBallsCalled());
+                b.append(Math.round(result.get()));
             }
             writeToFile(b.toString());
             
@@ -83,7 +83,7 @@ public final class TestHarness {
         }
     }
 
-    private class BingoGameSimulator implements Callable<BingoGameResultSet> {
+    private class BingoGameSimulator implements Callable<Double> {
 
         private final int numGames;
         private final int numCards;
@@ -96,12 +96,12 @@ public final class TestHarness {
         }
 
         @Override
-        public BingoGameResultSet call() throws Exception {
-            List<Integer> numBallsCalledInEachGame = new ArrayList<Integer>();
+        public Double call() throws Exception {
+            int sum = 0;
             for (int game = 0; game < numGames; game++) {
-                numBallsCalledInEachGame.add(playBingo());
+                sum += playBingo();
             }
-            return new BingoGameResultSet(numCards, numBingos, numBallsCalledInEachGame);
+            return (double)sum/(double)numGames;
         }
 
         /**
