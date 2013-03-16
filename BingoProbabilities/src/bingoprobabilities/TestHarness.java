@@ -20,19 +20,15 @@ public final class TestHarness {
 
         //run a bunch of fake games
         long startTime = System.currentTimeMillis();
-        List<BingoGameResult> results = new ArrayList<BingoGameResult>();
+        BingoGameResultSet resultSet = new BingoGameResultSet(NUM_CARDS, BINGOS_AVAILABLE);
         for (int i = 0; i < NUM_GAMES; i++) {
-            results.add(playBingoGame(NUM_CARDS, BINGOS_AVAILABLE));
+            resultSet.addResult(playBingoGame(NUM_CARDS, BINGOS_AVAILABLE));
         }
         System.out.println("Played " + String.valueOf(NUM_GAMES) + " games in " + String.valueOf(System.currentTimeMillis() - startTime) + "ms.");
 
         //process results
-        List<Integer> ballsCalled = new ArrayList<Integer>();
-        for (BingoGameResult result : results) {
-            ballsCalled.add(result.getNumBallsCalled());
-        }
-        System.out.println("On average, " + String.valueOf(Math.round(calculateMean(ballsCalled))) + " balls were called.");
-        System.out.println("Standard deviation is " + String.valueOf(calculateStandardDeviation(ballsCalled)));
+        System.out.println("On average, " + String.valueOf(Math.round(resultSet.getMeanNumBallsCalled())) + " balls were called.");
+        System.out.println("Standard deviation is " + String.valueOf(resultSet.getStandardDeviationNumBallsCalled()));
     }
 
     private BingoGameResult playBingoGame(int numCards, int numBingos) {
@@ -83,36 +79,9 @@ public final class TestHarness {
         }
 
         //return the game results to caller
-        return new BingoGameResult(numCards, numBingos, Math.min(bingos, numBingos), balls.getNumberOfPulls());
+        return new BingoGameResult(Math.min(bingos, numBingos), balls.getNumberOfPulls());
     }
-     
-    private double calculateMean(List<Integer> data) {
-        // mean is just an average
-        double mean = 0;
-        final int n = data.size();
-        if (n < 2) {
-            return Double.NaN;
-        }
-        for (int i = 0; i < n; i++) {
-            mean += data.get(i);
-        }
-        return mean / (double)n;
-    }
-
-    private double calculateStandardDeviation(List<Integer> data) {
-        // standard deviation is sqrt of sum of (values-mean) squared divided by n
-        double mean = calculateMean(data);
-
-        // calculate the sum of squares
-        double sum = 0;
-        for (int i = 0; i < data.size(); i++) {
-            final double v = data.get(i) - mean;
-            sum += v * v;
-        }
     
-        return Math.sqrt(sum / data.size());
-    }
-
     /**
      * @param args the command line arguments
      */
