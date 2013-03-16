@@ -82,8 +82,8 @@ public final class TestHarness {
             }
         }
 
-        //how many balls are left?
-        return new BingoGameResult(numCards, Math.min(bingos, numBingos), balls.getNumberOfPulls());
+        //return the game results to caller
+        return new BingoGameResult(numCards, numBingos, Math.min(bingos, numBingos), balls.getNumberOfPulls());
     }
      
     private double calculateMean(List<Integer> data) {
