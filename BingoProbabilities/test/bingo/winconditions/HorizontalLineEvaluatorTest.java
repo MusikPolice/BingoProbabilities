@@ -1,6 +1,8 @@
+package bingo.winconditions;
+
+
+
 import bingo.Card;
-import bingo.winconditions.HorizontalLineEvaluator;
-import bingo.winconditions.WinConditionEvaluator;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;

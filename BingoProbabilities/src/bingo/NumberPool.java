@@ -41,4 +41,12 @@ public class NumberPool {
     public boolean hasNext() {
         return index < this.pool.size();
     }
+    
+    /**
+     * Returns the number of values that have been pulled from this pool since it was created.
+     * @return 
+     */
+    public int getNumberOfPulls() {
+        return index + 1;
+    }
 }
