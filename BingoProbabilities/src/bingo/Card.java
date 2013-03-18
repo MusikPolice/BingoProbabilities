@@ -13,6 +13,7 @@ public class Card {
     
     private final Cell[][] cells = new Cell[5][5];
     private final Map<Integer, Cell> cellIndex = new HashMap<Integer, Cell>();
+    private boolean hasBingo = false;
     
     /**
      * Creates a new random bingo card
@@ -57,6 +58,14 @@ public class Card {
 
     public Cell getCell(int x, int y) {
         return cells[x][y];
+    }
+    
+    public boolean hasBingo() {
+        return this.hasBingo;
+    }
+    
+    public void setHasBingo(boolean bingo) {
+        this.hasBingo = bingo;
     }
 
     @Override

@@ -115,7 +115,6 @@ public final class TestHarness {
             WinConditionEvaluator evaluator = new HorizontalLineEvaluator();
 
             List<Card> cards = new ArrayList<Card>();
-            List<Card> finishedCards = new ArrayList<Card>();
             int bingos = 0;
 
             //create some random cards
@@ -125,25 +124,29 @@ public final class TestHarness {
             }
 
             //pull all 75 balls
+            boolean cardsInPlay;
+            int ball;
             while (balls.hasNext()) {
-                int ball = balls.getNext();
+                ball = balls.getNext();
 
                 //daub each card. if the card has a bingo, remove it from the game
+                cardsInPlay = false;
                 for (Card c : cards) {
+                    if (c.hasBingo()) {
+                        continue;
+                    } else {
+                        cardsInPlay = true;
+                    }
+                    
                     c.daubCell(ball);
-
                     if (evaluator.hasBingo(c)) {
-                        finishedCards.add(c);
+                        c.setHasBingo(true);
                         bingos++;
                     }
                 }
 
-                for (Card c : finishedCards) {
-                    cards.remove(c);
-                }
-
                 //if there are no more cards in play, the game is over
-                if (cards.isEmpty()) {
+                if (!cardsInPlay) {
                     break;
                 }
 
