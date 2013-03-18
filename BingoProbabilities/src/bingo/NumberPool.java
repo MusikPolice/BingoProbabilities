@@ -49,4 +49,9 @@ public class NumberPool {
     public int getNumberOfPulls() {
         return index + 1;
     }
+    
+    public void reset() {
+        Collections.shuffle(this.pool);
+        this.index = -1;
+    }
 }

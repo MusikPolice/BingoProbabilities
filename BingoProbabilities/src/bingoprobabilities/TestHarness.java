@@ -88,12 +88,17 @@ public final class TestHarness {
         private final int numGames;
         private final int numCards;
         private final int numBingos;
-        private final List<Card> cards = new ArrayList<Card>();
+        private final List<Card> cards;
+        private final NumberPool balls;
+        private final WinConditionEvaluator evaluator;
 
         public BingoGameSimulator(int numGames, int numCards, int numBingos) {
             this.numGames = numGames;
             this.numCards = numCards;
             this.numBingos = numBingos;
+            this.cards = new ArrayList<Card>();
+            this.balls = new NumberPool(1, 75);
+            this.evaluator = new HorizontalLineEvaluator();
         }
 
         @Override
@@ -108,9 +113,11 @@ public final class TestHarness {
             for (int game = 0; game < numGames; game++) {
                 sum += playBingo();
                 
+                //reset the cards and number pool between games
                 for (Card c : this.cards) {
                     c.reset();
                 }
+                this.balls.reset();
             }
             return (double)sum/(double)numGames;
         }
@@ -122,15 +129,12 @@ public final class TestHarness {
          * game
          */
         private int playBingo() {
-            NumberPool balls = new NumberPool(1, 75);
-            WinConditionEvaluator evaluator = new HorizontalLineEvaluator();
-
             //pull all 75 balls
             int bingos = 0;
-            boolean cardsInPlay = false;
-            int ball = 0;
-            while (balls.hasNext()) {
-                ball = balls.getNext();
+            boolean cardsInPlay;
+            int ball;
+            while (this.balls.hasNext()) {
+                ball = this.balls.getNext();
 
                 //daub each card. if the card has a bingo, remove it from the game
                 cardsInPlay = false;
@@ -142,7 +146,7 @@ public final class TestHarness {
                     }
                     
                     c.daubCell(ball);
-                    if (evaluator.hasBingo(c)) {
+                    if (this.evaluator.hasBingo(c)) {
                         c.setHasBingo(true);
                         bingos++;
                     }
@@ -154,13 +158,13 @@ public final class TestHarness {
                 }
 
                 //if all of the bingos have been earned, the game is over
-                if (bingos >= numBingos) {
+                if (bingos >= this.numBingos) {
                     break;
                 }
             }
 
             //return the game results to caller
-            return balls.getNumberOfPulls();
+            return this.balls.getNumberOfPulls();
         }
     }
 
