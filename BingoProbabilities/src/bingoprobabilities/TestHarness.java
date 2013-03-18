@@ -88,6 +88,7 @@ public final class TestHarness {
         private final int numGames;
         private final int numCards;
         private final int numBingos;
+        private final List<Card> cards = new ArrayList<Card>();
 
         public BingoGameSimulator(int numGames, int numCards, int numBingos) {
             this.numGames = numGames;
@@ -97,9 +98,19 @@ public final class TestHarness {
 
         @Override
         public Double call() throws Exception {
+            //create some random cards
+            for (int i = 0; i < numCards; i++) {
+                Card c = new Card();
+                this.cards.add(c);
+            }
+            
             int sum = 0;
             for (int game = 0; game < numGames; game++) {
                 sum += playBingo();
+                
+                for (Card c : this.cards) {
+                    c.reset();
+                }
             }
             return (double)sum/(double)numGames;
         }
@@ -114,24 +125,16 @@ public final class TestHarness {
             NumberPool balls = new NumberPool(1, 75);
             WinConditionEvaluator evaluator = new HorizontalLineEvaluator();
 
-            List<Card> cards = new ArrayList<Card>();
-            int bingos = 0;
-
-            //create some random cards
-            for (int i = 0; i < numCards; i++) {
-                Card c = new Card();
-                cards.add(c);
-            }
-
             //pull all 75 balls
-            boolean cardsInPlay;
-            int ball;
+            int bingos = 0;
+            boolean cardsInPlay = false;
+            int ball = 0;
             while (balls.hasNext()) {
                 ball = balls.getNext();
 
                 //daub each card. if the card has a bingo, remove it from the game
                 cardsInPlay = false;
-                for (Card c : cards) {
+                for (Card c : this.cards) {
                     if (c.hasBingo()) {
                         continue;
                     } else {

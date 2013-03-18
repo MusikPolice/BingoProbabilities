@@ -67,6 +67,15 @@ public class Card {
     public void setHasBingo(boolean bingo) {
         this.hasBingo = bingo;
     }
+    
+    public void reset() {
+        for (int x = 0; x < Card.SIZE; x++) {
+            for (int y = 0; y < Card.SIZE; y++) {
+                cells[x][y].setDaubed(false);
+            }
+        }
+        this.hasBingo = false;
+    }
 
     @Override
     public int hashCode() {
